@@ -24,9 +24,11 @@ import {
   WarningAmberOutlined,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const AgentDashboardMain = () => {
   const navigate = useNavigate();
+  const user = useSelector((state) => state.UserReducer.userInfo);
 
   const metrics = [
     { label: "TOTAL LISTINGS", value: "42", change: "+9.2%", icon: <HomeWorkOutlined sx={{ color: "#10B981" }} /> },
@@ -106,7 +108,7 @@ const AgentDashboardMain = () => {
           }}
         />
         <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: "22px", md: "28px" }, mb: 0.8 }}>
-          Welcome back, Alex!
+          Welcome back, {user?.firstname}!
         </Typography>
         <Typography variant="body2" sx={{ color: "#D1D5DB", maxWidth: "600px", fontSize: "12.5px", lineHeight: 1.5 }}>
           You have 3 property verifications pending and 18 active bookings for this week. Your listings are performing 12% better than last month.
@@ -146,8 +148,9 @@ const AgentDashboardMain = () => {
               <Button
                 fullWidth
                 variant="contained"
+                disabled
                 startIcon={<Add />}
-                onClick={() => navigate("/admin/listings/create")}
+                onClick={() => navigate("/agent/property-types")}
                 sx={{
                   bgcolor: "#10B981",
                   color: "#fff",
@@ -223,7 +226,7 @@ const AgentDashboardMain = () => {
             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#111827" }}>
               Featured Listings
             </Typography>
-            <Button size="small" endIcon={<ChevronRight />} onClick={() => navigate("/admin/listings")} sx={{ textTransform: "none", color: "#10B981", fontWeight: 700, fontSize: "12px" }}>
+            <Button size="small" endIcon={<ChevronRight />} onClick={() => navigate("/agent/listings")} sx={{ textTransform: "none", color: "#10B981", fontWeight: 700, fontSize: "12px" }}>
               View all
             </Button>
           </div>

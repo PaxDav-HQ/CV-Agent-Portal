@@ -1,10 +1,16 @@
 import React from "react";
 import { Box, TextField, InputAdornment, IconButton, Button } from "@mui/material";
-import { Search, NotificationsNoneOutlined, Add } from "@mui/icons-material";
+import { Search, NotificationsNoneOutlined, Add, Logout } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 const DashboardHeader = () => {
   const navigate = useNavigate();
+
+  const logout = () => {
+    // Clear user session or token here if needed
+    navigate("/login");
+    sessionStorage.removeItem("userToken");
+  }
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
@@ -47,8 +53,8 @@ const DashboardHeader = () => {
 
         <Button
           variant="contained"
-          startIcon={<Add />}
-          onClick={() => navigate("/admin/listings/create")}
+          startIcon={<Logout />}
+          onClick={() => logout()}
           sx={{
             bgcolor: "#10B981",
             color: "#FFFFFF",
@@ -62,7 +68,7 @@ const DashboardHeader = () => {
             "&:hover": { bgcolor: "#059669", boxShadow: "none" },
           }}
         >
-          Quick Actions
+          Log out
         </Button>
       </Box>
     </Box>

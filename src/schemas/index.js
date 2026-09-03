@@ -11,6 +11,18 @@ export const createAdminSchema = yup.object().shape({
     avatar: yup.mixed().required('Required')
 })
 
+export const createAccountSchema = yup.object().shape({
+    firstname: yup.string().required('Required'),
+    lastname: yup.string().required('Required'),
+    email: yup.string().email('Invalid Email Address').required('Required'),
+    password: yup.string().min(8, 'Password must be at least 8 characters').required('Required'),
+    confirmPassword: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match').required('Required'),
+    isAgent: yup.boolean(),
+    professional_type: yup.string().required('Required for agents'),
+    experience_level: yup.string().required('Required for agents'),
+    phone_number: yup.string().required('Required for agents')
+})
+
 export const addPropertySchema = yup.object().shape({
     name: yup.string().required('Required'),
     address: yup.string().required('Required'),
@@ -33,4 +45,9 @@ export const addBlogSchema = yup.object().shape({
 export const loginSchema = yup.object().shape({
     email: yup.string().email('Invalid Email Address').required('Required'),
     password: yup.string().required('Required')
+})
+
+export const resetPasswordSchema = yup.object().shape({
+    password: yup.string().min(8, 'Password must be at least 8 characters').required('Required'),
+    confirmPassword: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match').required('Required')
 })

@@ -31,7 +31,7 @@ const MENU_ITEMS = [
   { title: "Finance", icon: <AccountBalanceWalletOutlined />, path: "/agent/transactions" },
   { title: "Verification", icon: <VerifiedUserOutlined />, path: "/agent/verification" },
   { title: "Profile", icon: <PersonOutlineOutlined />, path: "/agent/profile" },
-  { title: "Settings", icon: <SettingsOutlined />, path: "/agent/settings" },
+  // { title: "Settings", icon: <SettingsOutlined />, path: "/agent/settings" },
 ];
 
 const SidenavList = ({ onCloseMobile }) => {

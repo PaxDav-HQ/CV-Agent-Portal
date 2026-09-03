@@ -11,18 +11,24 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import {
-  Check,
   Send,
   LocationOnOutlined,
   EditOutlined,
-  BadgeOutlined,
-  AccountCircleOutlined,
   LockOutlined,
-  CloudUploadOutlined,
-  ShieldOutlined,
   DomainOutlined,
+  BedOutlined,
+  PersonOutlined,
 } from "@mui/icons-material";
 import { formatDisplayNumber } from "../utils/numberFormatters";
+
+const resolveImageSrc = (img) => {
+  if (!img) return "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=300";
+  if (img instanceof File || img instanceof Blob) {
+    return URL.createObjectURL(img);
+  }
+  if (typeof img === "string") return img;
+  return img?.url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=300";
+};
 
 const Step3ReviewSubmit = ({
   typeConfig,
@@ -34,9 +40,29 @@ const Step3ReviewSubmit = ({
   onChange,
   onSubmit,
 }) => {
+  const isHotel = propertyType === "hotel";
+
+  // Calculate Hotel Price Range for header badge
+  const hotelPricing = useMemo(() => {
+    if (!isHotel || !formData.room_types || formData.room_types.length === 0) {
+      return null;
+    }
+    const prices = formData.room_types
+      .map((r) => Number(r.price_per_night) || 0)
+      .filter((p) => p > 0);
+
+    if (prices.length === 0) return "Price on request";
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+
+    return min === max
+      ? `₦${formatDisplayNumber(min)} / Night`
+      : `₦${formatDisplayNumber(min)} – ₦${formatDisplayNumber(max)} / Night`;
+  }, [isHotel, formData.room_types]);
+
   const selectedAmenityNames = useMemo(() => {
-    return formData.amenities.map((id) => {
-      const match = availableAmenities.find(
+    return (formData.amenities || []).map((id) => {
+      const match = (availableAmenities || []).find(
         (item) =>
           String(item.id || item._id) === String(id) || item.name === id
       );
@@ -44,137 +70,24 @@ const Step3ReviewSubmit = ({
     });
   }, [formData.amenities, availableAmenities]);
 
+  // Primary cover image is always the first image in formData.images
+  const coverImage = useMemo(() => {
+    if (formData.images && formData.images.length > 0) {
+      return formData.images[0];
+    }
+    return formData.main_photo || null;
+  }, [formData.images, formData.main_photo]);
+
   return (
     <Box>
-      <div className="d-flex justify-content-between align-items-start mb-4">
-        <div>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: "#111827" }}>
-            Verify your account & review your listing
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#6B7280", mt: 0.5 }}>
-            Verification is required to publish your listing on our platform.
-          </Typography>
-        </div>
-        <Box
-          sx={{
-            p: 1.5,
-            borderRadius: "12px",
-            bgcolor: "#F0FDF4",
-            border: "1px solid #DCFCE7",
-            display: { xs: "none", sm: "flex" },
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <ShieldOutlined sx={{ color: "#017E53" }} />
-          <Typography
-            variant="caption"
-            sx={{ color: "#017E53", fontWeight: 700 }}
-          >
-            Verified badge eligible
-          </Typography>
-        </Box>
-      </div>
-
-      {/* VERIFICATION UPLOADS */}
-      <Paper elevation={0} className="p-4 border mb-4" sx={{ borderRadius: "16px" }}>
-        <div className="d-flex align-items-center gap-2 mb-1">
-          <Check sx={{ color: "#017E53", fontSize: 20 }} />
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 700, color: "#111827" }}
-          >
-            Verification (Required)
-          </Typography>
-        </div>
-        <Typography variant="caption" className="text-muted d-block mb-3">
-          Upload your government ID and selfie to verify identity.
+      <div className="mb-4">
+        <Typography variant="h5" sx={{ fontWeight: 800, color: "#111827" }}>
+          Review your listing & Submit
         </Typography>
-
-        <div className="row g-3">
-          <div className="col-12 col-md-6">
-            <label style={{ width: "100%", cursor: "pointer" }}>
-              <input
-                type="file"
-                accept="image/*,.pdf"
-                style={{ display: "none" }}
-                onChange={(e) => onChange("id_card", e.target.files[0])}
-              />
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: "12px",
-                  border: "1px solid #E5E7EB",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  "&:hover": { bgcolor: "#F9FAFB" },
-                }}
-              >
-                <div className="d-flex align-items-center gap-2">
-                  <BadgeOutlined sx={{ color: "#017E53", fontSize: 28 }} />
-                  <div>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 700, fontSize: "12.5px" }}
-                    >
-                      ID Document
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#9CA3AF" }}>
-                      {formData.id_card
-                        ? formData.id_card.name
-                        : "Upload ID card, Driver's License or Passport"}
-                    </Typography>
-                  </div>
-                </div>
-                <CloudUploadOutlined sx={{ color: "#9CA3AF" }} />
-              </Paper>
-            </label>
-          </div>
-
-          <div className="col-12 col-md-6">
-            <label style={{ width: "100%", cursor: "pointer" }}>
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={(e) => onChange("selfie", e.target.files[0])}
-              />
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: "12px",
-                  border: "1px solid #E5E7EB",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  "&:hover": { bgcolor: "#F9FAFB" },
-                }}
-              >
-                <div className="d-flex align-items-center gap-2">
-                  <AccountCircleOutlined sx={{ color: "#017E53", fontSize: 28 }} />
-                  <div>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 700, fontSize: "12.5px" }}
-                    >
-                      Selfie
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: "#9CA3AF" }}>
-                      {formData.selfie
-                        ? formData.selfie.name
-                        : "Take a Clear Selfie"}
-                    </Typography>
-                  </div>
-                </div>
-                <CloudUploadOutlined sx={{ color: "#9CA3AF" }} />
-              </Paper>
-            </label>
-          </div>
-        </div>
-      </Paper>
+        <Typography variant="body2" sx={{ color: "#6B7280", mt: 0.5 }}>
+          This is required to publish your listing on your platform.
+        </Typography>
+      </div>
 
       {/* REVIEW CARD */}
       <Paper elevation={0} className="p-4 border mb-4" sx={{ borderRadius: "16px" }}>
@@ -201,17 +114,14 @@ const Step3ReviewSubmit = ({
         <div className="d-flex flex-column flex-sm-row gap-3 mb-3">
           <Box
             component="img"
-            src={
-              formData.images[0]
-                ? URL.createObjectURL(formData.images[0])
-                : "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=300"
-            }
+            src={resolveImageSrc(coverImage)}
             alt="listing thumbnail"
             sx={{
               width: { xs: "100%", sm: 120 },
               height: 90,
               borderRadius: "10px",
               objectFit: "cover",
+              bgcolor: "#F3F4F6",
             }}
           />
           <div>
@@ -238,22 +148,28 @@ const Step3ReviewSubmit = ({
             <div className="d-flex flex-wrap gap-2 mt-2">
               {formData.capacity && (
                 <Chip
-                  label={`Capacity: ${formatDisplayNumber(
-                    formData.capacity
-                  )} People`}
+                  label={`Capacity: ${formatDisplayNumber(formData.capacity)} People`}
                   size="small"
                   sx={{ bgcolor: "#F3F4F6", fontWeight: 600, fontSize: "11px" }}
                 />
               )}
               <Chip
-                label={`Type: ${propertyType.toUpperCase()}`}
+                label={`Type: ${
+                  propertyType === "property"
+                    ? (formData.type || "").toUpperCase()
+                    : (propertyType || "").toUpperCase()
+                }`}
                 size="small"
                 sx={{ bgcolor: "#F3F4F6", fontWeight: 600, fontSize: "11px" }}
               />
+
+              {/* DYNAMIC PRICING CHIP */}
               <Chip
-                label={`₦${formatDisplayNumber(formData.total_price)} / ${
-                  formData.pricing_type
-                }`}
+                label={
+                  isHotel
+                    ? hotelPricing
+                    : `₦${formatDisplayNumber(formData.total_price)} / ${formData.pricing_type}`
+                }
                 size="small"
                 sx={{
                   bgcolor: "#ECFDF5",
@@ -265,6 +181,74 @@ const Step3ReviewSubmit = ({
             </div>
           </div>
         </div>
+
+        {/* HOTEL SPECIFIC: ROOM TYPES REVIEW LIST */}
+        {isHotel && formData.room_types && formData.room_types.length > 0 && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Typography
+              variant="caption"
+              className="text-muted fw-bold d-block mb-2"
+              sx={{ letterSpacing: "0.5px" }}
+            >
+              ROOM TYPES & RATES ({formData.room_types.length})
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 2 }}>
+              {formData.room_types.map((room, idx) => (
+                <Paper
+                  key={idx}
+                  elevation={0}
+                  sx={{
+                    p: 1.8,
+                    bgcolor: "#F9FAFB",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: "10px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 1.5,
+                  }}
+                >
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 700, color: "#111827", fontSize: "13px" }}
+                    >
+                      {room.name || `Room #${idx + 1}`}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 2,
+                        mt: 0.3,
+                        color: "#6B7280",
+                        fontSize: "11.5px",
+                      }}
+                    >
+                      <span className="d-flex align-items-center gap-1">
+                        <BedOutlined sx={{ fontSize: 14 }} /> {room.bed_type}
+                      </span>
+                      <span className="d-flex align-items-center gap-1">
+                        <PersonOutlined sx={{ fontSize: 14 }} />{" "}
+                        {room.max_occupancy || "2 Guests"}
+                      </span>
+                      {room.available_rooms && (
+                        <span>• {room.available_rooms} Available</span>
+                      )}
+                    </Box>
+                  </Box>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 800, color: "#017E53", fontSize: "13px" }}
+                  >
+                    ₦{formatDisplayNumber(room.price_per_night)} / night
+                  </Typography>
+                </Paper>
+              ))}
+            </Box>
+          </>
+        )}
 
         <Divider sx={{ my: 2 }} />
 
@@ -314,7 +298,7 @@ const Step3ReviewSubmit = ({
       <FormControlLabel
         control={
           <Checkbox
-            checked={formData.agree_terms}
+            checked={Boolean(formData.agree_terms)}
             onChange={(e) => onChange("agree_terms", e.target.checked)}
             sx={{
               color: "#017E53",
@@ -353,7 +337,7 @@ const Step3ReviewSubmit = ({
           "&:hover": { bgcolor: "#016744" },
         }}
       >
-        Submit {typeConfig.title}
+        {typeConfig.buttonText || "Submit Listing"}
       </Button>
 
       <div className="d-flex justify-content-center align-items-center gap-1 mt-3 text-muted">

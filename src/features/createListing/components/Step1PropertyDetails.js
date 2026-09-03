@@ -18,11 +18,11 @@ import {
   LocationOnOutlined,
   NotesOutlined,
   MapOutlined,
-  ChatBubbleOutlineOutlined,
-  CalendarTodayOutlined,
+  ChatBubbleOutlineOutlined,  
   LockOutlined,
   StarBorderOutlined,
   DomainOutlined,
+  CategoryOutlined,
 } from "@mui/icons-material";
 
 import { STATE_COORDINATES, NIGERIAN_STATES } from "../constants/wizardConfig";
@@ -272,19 +272,19 @@ const Step1PropertyDetails = ({
         <div className="row g-3">
           <div className="col-12 col-md-6">
             <label className="form-label small fw-bold text-muted">
-              Year Established
+              Category
             </label>
             <FormControl fullWidth size="small">
               <Select
-                value={formData.year_established}
-                onChange={(e) => onChange("year_established", e.target.value)}
+                value={formData.category}
+                onChange={(e) => onChange("category", e.target.value)}
                 startAdornment={
                   <InputAdornment position="start">
-                    <CalendarTodayOutlined sx={{ color: "#9CA3AF", fontSize: 18 }} />
+                    <CategoryOutlined sx={{ color: "#9CA3AF", fontSize: 18 }} />
                   </InputAdornment>
                 }
               >
-                {["2026", "2025", "2024", "2023", "2022", "2020", "2018", "2015", "2010"].map((y) => (
+                {["Sale", "Rent", "Shortlet"].map((y) => (
                   <MenuItem key={y} value={y}>
                     {y}
                   </MenuItem>
@@ -292,6 +292,55 @@ const Step1PropertyDetails = ({
               </Select>
             </FormControl>
           </div>
+          {propertyType == 'property' && (
+            <div className="col-12 col-md-6">
+              <label className="form-label small fw-bold text-muted">
+                Property Type
+              </label>
+              <FormControl fullWidth size="small">
+              <Select
+                value={formData.type}
+                onChange={(e) => onChange("type", e.target.value)}
+                startAdornment={
+                  <InputAdornment position="start">
+                    <CategoryOutlined sx={{ color: "#9CA3AF", fontSize: 18 }} />
+                  </InputAdornment>
+                }
+              >
+                {["Land", "Apartment"].map((y) => (
+                  <MenuItem key={y} value={y}>
+                    {y}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            </div>
+          )}          
+
+          {formData.type == 'Land' && (
+            <div className="col-12 col-md-6">
+              <label className="form-label small fw-bold text-muted">
+                Land Size (in square meters)
+              </label>
+              <TextField
+                fullWidth
+                size="small"
+                type="number"
+                value={formData.land_size}
+                onChange={(e) => onFormattedChange("land_size", e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment
+                      position="start"
+                      sx={{ alignSelf: "flex-start", mt: 1 }}
+                    >
+                      <NotesOutlined sx={{ color: "#9CA3AF", fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </div>
+          )} 
 
           {typeConfig.hasHotelDetails && (
             <div className="col-12 col-md-6">
