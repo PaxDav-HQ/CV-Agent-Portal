@@ -20,6 +20,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import UnderConstruction from './pages/UnderConstruction';
+import GoogleAuth from './pages/GoogleAuth';
 
 function App() {
   const uri = useSelector(state=>state.UriReducer.uri)
@@ -44,6 +45,7 @@ function App() {
       <Routes>
         <Route path='/' element={<Navigate replace to="/login" />} />
         {/* <Route path='/' element={<Maintenance />} /> */}
+        <Route path='/google-auth' element={<GoogleAuth />} />
         <Route path='/login' element={<Login />} />    
         <Route path='/register' element={<AgentRegister />} />   
         <Route path='/create-account/verify' element={<VerifyEmail />} />          

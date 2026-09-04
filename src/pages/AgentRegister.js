@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -24,6 +25,7 @@ import {
 } from "@mui/icons-material";
 import { createAccountSchema } from "../schemas";
 import { extractErrorMessage } from "../utils/errorParser";
+import icon from "../assets/icon.png"
 
 const PROFESSIONAL_TYPES = [
   { value: "real_estate_agent", label: "Real Estate Agent" },
@@ -65,11 +67,18 @@ const EyeIcon = ({ slash }) => (
 const AgentRegister = () => {
   const uri = useSelector((state) => state.UriReducer.uri);
   const navigate = useNavigate();
+  const location = useLocation()
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const errorParam = params.get("error");
+    if (errorParam) setError(errorParam);
+  }, [location.search]);
 
   const {
     handleChange,
@@ -156,20 +165,24 @@ const AgentRegister = () => {
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Box
+              src={icon}
+              alt="CV Properties Logo"
+              component="img"
               sx={{
-                width: 38,
-                height: 38,
-                borderRadius: "10px",
-                bgcolor: "#017E53",
-                color: "#FFFFFF",
+                width: 35,
+                height: 35,
+                // borderRadius: "10px",
+                // bgcolor: "#017E53",
+                // color: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 900,
                 fontSize: "18px",
+                // filter: "brightness(0) invert(1)"
               }}
             >
-              CV
+              {/* <img src={icon} alt="CV Properties Logo" width="24" height="24" /> */}
             </Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
               CV Properties
@@ -177,7 +190,7 @@ const AgentRegister = () => {
           </Box>
 
           <Chip
-            label="PARTNER APPLICATION"
+            label="AGENT"
             size="small"
             sx={{ bgcolor: "#ECFDF5", color: "#017E53", fontWeight: 800, fontSize: "10px" }}
           />
@@ -197,7 +210,7 @@ const AgentRegister = () => {
             <button
               type="button"
               onClick={() => {
-                window.location.href = `${uri}auth/google/register?type=agent`;
+                window.location.href = `${uri}auth/google/register?type=agent&origin=${encodeURIComponent(window.location.origin)}`;
               }}
               style={{
                 width: "100%",

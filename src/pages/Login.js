@@ -22,6 +22,7 @@ import {
   TrendingUpOutlined,
 } from "@mui/icons-material";
 import { loginSchema } from "../schemas";
+import icon from "../assets/icon.png"
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -49,7 +50,7 @@ const Login = () => {
               setError("Access restricted: This portal is exclusively for registered CV Properties agents.");
             } else {
               sessionStorage.setItem("userToken", res.data.token);
-              sessionStorage.setItem("route", "/agent/dashboard");
+              sessionStorage.setItem("route", "/agent/dashboard")
               navigate("/agent/dashboard");
             }
           })
@@ -107,20 +108,24 @@ const Login = () => {
         <Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Box
+              src={icon}
+              alt="CV Properties Logo"
+              component="img"
               sx={{
-                width: 38,
-                height: 38,
-                borderRadius: "10px",
-                bgcolor: "#017E53",
-                color: "#FFFFFF",
+                width: 35,
+                height: 35,
+                // borderRadius: "10px",
+                // bgcolor: "#017E53",
+                // color: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 900,
                 fontSize: "18px",
+                // filter: "brightness(0) invert(1)"
               }}
             >
-              CV
+              {/* <img src={icon} alt="CV Properties Logo" width="24" height="24" /> */}
             </Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
               CV Properties
