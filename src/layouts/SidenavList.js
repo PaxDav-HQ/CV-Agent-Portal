@@ -20,6 +20,7 @@ import {
   SettingsOutlined,
   KeyboardArrowDown,
   CheckCircle,
+  Logout
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -30,7 +31,7 @@ const MENU_ITEMS = [
   // { title: "Bookings", icon: <CalendarTodayOutlined />, path: "/agent/bookings" },
   { title: "Finance", icon: <AccountBalanceWalletOutlined />, path: "/agent/transactions" },
   { title: "Verification", icon: <VerifiedUserOutlined />, path: "/agent/verification" },
-  { title: "Profile", icon: <PersonOutlineOutlined />, path: "/agent/profile" },
+  { title: "Profile", icon: <PersonOutlineOutlined />, path: "/agent/payouts" },
   // { title: "Settings", icon: <SettingsOutlined />, path: "/agent/settings" },
 ];
 
@@ -146,6 +147,24 @@ const SidenavList = ({ onCloseMobile }) => {
               </ListItem>
             );
           })}
+          <ListItem disablePadding sx={{ mt: 1 }} className="d-block d-md-none">
+            <ListItemButton
+              onClick={() => handleNav("/login")}
+            >
+              <ListItemIcon sx={{ minWidth: 34, color: "#6B7280" }}>
+                <Logout sx={{ fontSize: 20 }} />
+              </ListItemIcon>
+              <ListItemText
+                primary="Log out"
+                primaryTypographyProps={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#1F2937",
+                  lineHeight: 1.2,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
         </List>
       </Box>
     </Box>

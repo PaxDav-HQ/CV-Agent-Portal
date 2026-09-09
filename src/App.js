@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import AgentDashboardMain from './features/AgentDashboardMain';
+import AgentDashboardMain from './features/dashboard/AgentDashboardMain';
 import MyPropertiesServices from './features/myPropertyServices/MyPropertiesServices';
 import ListPropertyType from './features/ListPropertyType';
 import CreateListingWizard from './features/createListing/CreateListingWizard';
@@ -21,6 +21,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import UnderConstruction from './pages/UnderConstruction';
 import GoogleAuth from './pages/GoogleAuth';
+import OfferServiceMain from './features/offerServices/OfferServiceMain';
 
 function App() {
   const uri = useSelector(state=>state.UriReducer.uri)
@@ -62,9 +63,10 @@ function App() {
             path="verification" 
             element={<UnderConstruction featureName="Agent Verification" />} 
           />
-          <Route path='transactions' element={<UnderConstruction featureName="Earnings and Transactions" />} />          
+          <Route path='payouts' element={<UnderConstruction featureName="Earnings and Transactions" />} />          
         </Route>
-        <Route path='/agent/property-types' element={<ListPropertyType />} />        
+        <Route path='/agent/property-types' element={<ListPropertyType />} />  
+        <Route path='/agent/offer-services' element={<OfferServiceMain />} />      
         <Route path='/list-property/details' element={<CreateListingWizard />} />
         <Route path='*' element={<NotFound />} />
       </Routes>

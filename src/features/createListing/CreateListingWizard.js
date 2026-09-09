@@ -80,9 +80,9 @@ const CreateListingWizard = () => {
       {
         name: "Deluxe Room",
         bed_type: "King Bed",
-        max_occupancy: "2 Guests",
-        price_per_night: "",
-        available_rooms: "",
+        capacity: "2 Guests",
+        base_price: "",
+        total_rooms: "",
       },
     ],
 
@@ -93,7 +93,7 @@ const CreateListingWizard = () => {
     additional_charges: "",
     available_from: new Date().toISOString().split("T")[0],
     vacancy_status: "Available Now",
-    supportedEvent: ["wedding", "birthday"],
+    supportedEvent: [],
 
     amenities: [],
     images: [],
@@ -126,7 +126,7 @@ const CreateListingWizard = () => {
 
     setLoading(true);
     axios
-      .get(`${uri}property/update/${listingId}`, {
+      .get(`${uri}property/${listingId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -148,19 +148,7 @@ const CreateListingWizard = () => {
           } catch (e) {
             console.error("Failed parsing room_types:", e);
           }
-        }
-
-        let parsedEvents = [];
-        if (item.supported_events) {
-          try {
-            parsedEvents =
-              typeof item.supported_events === "string"
-                ? JSON.parse(item.supported_events)
-                : item.supported_events;
-          } catch (e) {
-            console.error("Failed parsing supported_events:", e);
-          }
-        }
+        }        
 
         const mappedAmenities = Array.isArray(item.amenities)
           ? item.amenities.map((a) => (typeof a === "object" ? a.id || a._id : a))
@@ -191,12 +179,12 @@ const CreateListingWizard = () => {
           latitude: item.latitude ?? (STATE_COORDINATES[item.location]?.lat || prev.latitude),
           longitude: item.longitude ?? (STATE_COORDINATES[item.location]?.lon || prev.longitude),
           category: item.category.charAt(0).toUpperCase() + item.category.slice(1),
-          type: item.type || "Apartment",
+          type: item.type == 'house' ? "Apartment" : item.type.charAt(0).toUpperCase() + item.type.slice(1),
           land_size: item.land_size || 0,
           capacity: item.capacity || "",
-          number_of_rooms: item.number_of_rooms || "",
+          number_of_rooms: item.number_of_rooms || 0,
           available_units: item.available_units || "",
-          hall_type: item.hall_type || prev.hall_type,
+          hall_type: item.hall_type,
           seating_arrangement: item.seating_arrangement || prev.seating_arrangement,
           indoor_outdoor: item.indoor ? "Indoor" : item.indoor_outdoor || "Indoor",
           parking_spaces: item.parking_spaces || "",
@@ -221,7 +209,7 @@ const CreateListingWizard = () => {
             ? new Date(item.available_from).toISOString().split("T")[0]
             : prev.available_from,
           vacancy_status: item.vacancy_status || "Available Now",
-          supportedEvent: parsedEvents.length > 0 ? parsedEvents : prev.supportedEvent,
+          supportedEvent: JSON.parse(item.supported_events),
 
           amenities: mappedAmenities,
           images: consolidatedImages,
@@ -256,9 +244,9 @@ const CreateListingWizard = () => {
         {
           name: "",
           bed_type: "King Bed",
-          max_occupancy: "2 Guests",
-          price_per_night: "",
-          available_rooms: "",
+          capacity: "2 Guests",
+          base_price: "",
+          total_rooms: "",
         },
       ],
     }));
@@ -335,16 +323,16 @@ const CreateListingWizard = () => {
     postData.append("category", formData.category?.toLowerCase());
     postData.append(
       "type",
-      activePropertyType === "property/update" ? formData.type.toLowerCase() : activePropertyType
+      activePropertyType == "property" ? formData.type.toLowerCase() : activePropertyType
     );
 
     // Base Price
     const basePrice =
       activePropertyType === "hotel"
-        ? Number(formData.room_types[0]?.price_per_night) || 0
+        ? Number(formData.room_types[0]?.base_price) || 0
         : Number(formData.total_price) || 0;
 
-    postData.append("total_price", basePrice);
+    postData.append("total_price", formData.total_price);
     postData.append(
       "pricing_type",
       activePropertyType === "hotel" ? "night" : formData.pricing_type
@@ -356,8 +344,19 @@ const CreateListingWizard = () => {
     }
 
     if (activePropertyType === "event_center") {
+      console.log(formData.supportedEvent, "supportedEvent");
       postData.append("indoor", formData.indoor_outdoor === "Indoor");
       formData.supportedEvent.forEach((evt) => postData.append("supported_events[]", evt));
+      postData.append("hall_type", formData.hall_type);
+      postData.append("seating_arrangement", formData.seating_arrangement);
+      postData.append("parking_spaces", Number(formData.parking_spaces) || 0);
+
+    }
+    if (activePropertyType === "hostel") {
+      postData.append("gender_preference", formData.gender_preference.toLowerCase());
+      postData.append("bathroom_type", formData.bathroom_type);
+      postData.append("furnishing_level", formData.furnishing_level);
+      postData.append("available_units", Number(formData.available_units) || 0);      
     }
 
     if (formData.floor_numbers !== 0) {
@@ -386,9 +385,9 @@ const CreateListingWizard = () => {
       const sanitizedRooms = formData.room_types.map((room) => ({
         name: room.name,
         bed_type: room.bed_type,
-        max_occupancy: room.max_occupancy,
-        price_per_night: Number(room.price_per_night) || 0,
-        available_rooms: Number(room.available_rooms) || 1,
+        capacity: room.capacity,
+        base_price: Number(room.base_price) || 0,
+        total_rooms: Number(room.total_rooms) || 1,
       }));
       postData.append("room_types", JSON.stringify(sanitizedRooms));
     }

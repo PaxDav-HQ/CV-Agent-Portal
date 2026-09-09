@@ -51,25 +51,27 @@ const DashboardHeader = () => {
           <NotificationsNoneOutlined sx={{ fontSize: 18 }} />
         </IconButton>
 
-        <Button
-          variant="contained"
-          startIcon={<Logout />}
-          onClick={() => logout()}
-          sx={{
-            bgcolor: "#10B981",
-            color: "#FFFFFF",
-            borderRadius: "24px",
-            textTransform: "none",
-            fontWeight: 700,
-            fontSize: "12.5px",
-            px: 2.2,
-            py: 0.8,
-            boxShadow: "none",
-            "&:hover": { bgcolor: "#059669", boxShadow: "none" },
-          }}
-        >
-          Log out
-        </Button>
+        <div className="d-none d-md-block">
+          <Button
+            variant="contained"
+            startIcon={<Logout />}
+            onClick={() => logout()}          
+            sx={{
+              bgcolor: "#10B981",
+              color: "#FFFFFF",
+              borderRadius: "24px",
+              textTransform: "none",
+              fontWeight: 700,
+              fontSize: "12.5px",
+              px: 2.2,
+              py: 0.8,
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#059669", boxShadow: "none" },
+            }}
+          >
+            Log out
+          </Button>
+        </div>
       </Box>
     </Box>
   );
