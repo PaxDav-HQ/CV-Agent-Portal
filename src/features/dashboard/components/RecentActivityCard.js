@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Paper, Typography, Button } from "@mui/material";
+import { Box, Paper, Typography, Button, Avatar } from "@mui/material";
 
 const RecentActivityCard = ({ activities = [] }) => {
   return (
@@ -26,7 +26,7 @@ const RecentActivityCard = ({ activities = [] }) => {
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {activities.map((act, idx) => (
           <Box key={idx} sx={{ display: "flex", alignItems: "flex-start", gap: 1.8 }}>
-            <Box
+            <Avatar
               sx={{
                 width: 32,
                 height: 32,
@@ -37,16 +37,16 @@ const RecentActivityCard = ({ activities = [] }) => {
                 justifyContent: "center",
                 flexShrink: 0,
                 mt: 0.2,
-              }}
+              }}              
             >
-              {act.icon}
-            </Box>
+              {act.avatar}
+            </Avatar>
             <div>
               <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1F2937", fontSize: "12px", lineHeight: 1.3 }}>
                 {act.title}
               </Typography>
               <Typography variant="caption" sx={{ color: "#94A3B8", fontSize: "11px" }}>
-                {act.time}
+                {act.timeAgo}
               </Typography>
             </div>
           </Box>

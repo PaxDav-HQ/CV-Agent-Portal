@@ -92,11 +92,24 @@ const Step2PricingMedia = ({ formik, onNext }) => {
         </Box>
 
         {/* Pricing Type Options */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="caption" sx={{ fontWeight: 700, color: "#1E293B", fontSize: "12px", display: "block", mb: 1 }}>
+        {/* Pricing Type Options */}
+        <Box sx={{ mb: 3, width: "100%", minWidth: 0 }}>
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: 700, color: "#1E293B", fontSize: "12px", display: "block", mb: 1 }}
+          >
             Pricing Type <span style={{ color: "#EF4444" }}>*</span>
           </Typography>
-          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "repeat(3, 180px)" }, gap: 1.5 }}>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: { xs: 1, sm: 1.5 },
+              width: "100%",
+              maxWidth: { xs: "100%", sm: "540px" }, // stays centered and proportional on desktop
+            }}
+          >
             {pricingTypes.map((pt) => {
               const isSelected = values.pricing_type === pt.id;
               return (
@@ -104,15 +117,25 @@ const Step2PricingMedia = ({ formik, onNext }) => {
                   key={pt.id}
                   onClick={() => setFieldValue("pricing_type", pt.id)}
                   sx={{
+                    minWidth: 0,
+                    width: "100%",
+                    height: { xs: 44, sm: 48 }, // Uniform fixed height ensures identical sizing
+                    p: { xs: "4px 6px", sm: "8px 12px" },
                     borderRadius: "12px",
                     textTransform: "none",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    py: 1.2,
+                    fontSize: { xs: "11px", sm: "13px" },
+                    fontWeight: isSelected ? 800 : 600,
+                    lineHeight: 1.15,
+                    textAlign: "center",
+                    whiteSpace: "nowrap", // Prevents awkward vertical word breaks
                     bgcolor: isSelected ? "#F0FDF4" : "#F8FAFC",
                     color: isSelected ? "#10B981" : "#64748B",
                     border: isSelected ? "1.5px solid #10B981" : "1px solid #E2E8F0",
-                    "&:hover": { bgcolor: isSelected ? "#DCFCE7" : "#F1F5F9" },
+                    transition: "all 0.15s ease-in-out",
+                    "&:hover": {
+                      bgcolor: isSelected ? "#DCFCE7" : "#F1F5F9",
+                      borderColor: isSelected ? "#10B981" : "#CBD5E1",
+                    },
                   }}
                 >
                   {pt.label}

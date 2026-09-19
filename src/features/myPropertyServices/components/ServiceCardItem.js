@@ -52,7 +52,7 @@ const ServiceCardItem = ({ service }) => {
             {service.description}
           </Typography>
           <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#111827", fontSize: "13px" }}>
-            {service.price}{" "}
+            {service.price.displayPrice}{" "}
             {service.priceSub && (
               <Typography component="span" variant="caption" sx={{ color: "#6B7280", fontSize: "11px", fontWeight: 400 }}>
                 {service.priceSub}
@@ -82,7 +82,7 @@ const ServiceCardItem = ({ service }) => {
             LISTED ON
           </Typography>
           <Typography variant="caption" sx={{ color: "#374151", fontSize: "11px", fontWeight: 700 }}>
-            {service.listedDate}
+            {service.listedDate.date}
           </Typography>
         </div>
 

@@ -22,6 +22,9 @@ import ResetPassword from './pages/ResetPassword';
 import UnderConstruction from './pages/UnderConstruction';
 import GoogleAuth from './pages/GoogleAuth';
 import OfferServiceMain from './features/offerServices/OfferServiceMain';
+import AgentProfileDetails from './features/profile/AgentProfileDetails';
+import AgentEarningsWithdrawals from './features/payouts/AgentEarningsWithdrawals';
+import AgentVerification from './features/verifications/AgentVerification';
 
 function App() {
   const uri = useSelector(state=>state.UriReducer.uri)
@@ -57,13 +60,13 @@ function App() {
           <Route path='listings' element={<MyPropertiesServices />} />
           <Route 
             path="profile" 
-            element={<UnderConstruction featureName="Profile" />} 
+            element={<AgentProfileDetails />} 
           />
           <Route 
             path="verification" 
-            element={<UnderConstruction featureName="Agent Verification" />} 
+            element={<AgentVerification />} 
           />
-          <Route path='payouts' element={<UnderConstruction featureName="Earnings and Transactions" />} />          
+          <Route path='payouts' element={<AgentEarningsWithdrawals />} />          
         </Route>
         <Route path='/agent/property-types' element={<ListPropertyType />} />  
         <Route path='/agent/offer-services' element={<OfferServiceMain />} />      

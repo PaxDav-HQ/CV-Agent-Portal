@@ -192,25 +192,31 @@ const Step1ServiceDetails = ({ formik, onNext }) => {
           options={options}
           getOptionLabel={(option) => (typeof option === "string" ? option : option.label || "")}
           filterOptions={(x) => x}
-          value={values.location || ""}
+          value={values.location || null}
           inputValue={locationInput}
-          onInputChange={(e, newInputValue) => {
+          onInputChange={(event, newInputValue, reason) => {
+            // Only fetch suggestions when the change is from user typing
             setLocationInput(newInputValue);
-            setFieldValue("location", newInputValue);
-            fetchPlaces(newInputValue);
+            if (reason === "input") {
+              setFieldValue("location", newInputValue, false); // pass false to skip validation on every stroke
+              fetchPlaces(newInputValue);
+            }
           }}
-          onChange={(e, selectedOption) => {
+          onChange={(event, selectedOption) => {
             if (typeof selectedOption === "object" && selectedOption !== null) {
+              setLocationInput(selectedOption.label);
               setFieldValue("location", selectedOption.label);
               setFieldValue("coordinates", {
                 latitude: selectedOption.latitude,
                 longitude: selectedOption.longitude,
               });
+            } else if (typeof selectedOption === "string") {
+              setLocationInput(selectedOption);
+              setFieldValue("location", selectedOption);
             }
           }}
           renderInput={(params) => {
             const inputProps = params.InputProps || params.slotProps?.input || {};
-
             return (
               <TextField
                 {...params}
@@ -242,7 +248,7 @@ const Step1ServiceDetails = ({ formik, onNext }) => {
             );
           }}
           renderOption={(props, option) => (
-            <Box component="li" {...props} sx={{ fontSize: "12.5px", py: 1, display: "flex", alignItems: "flex-start", gap: 1 }}>
+            <Box component="li" {...props} key={option.label + option.latitude} sx={{ fontSize: "12.5px", py: 1, display: "flex", alignItems: "flex-start", gap: 1 }}>
               <PlaceOutlined sx={{ fontSize: 16, color: "#10B981", mt: 0.3, flexShrink: 0 }} />
               <Typography variant="body2" sx={{ fontSize: "12.5px", color: "#1E293B" }}>
                 {option.label}

@@ -421,7 +421,7 @@ const CreateListingWizard = () => {
         severity: "success",
       });
       setTimeout(() => {
-        navigate("/admin/listings/all");
+        navigate("/agent/listings");
       }, 1200);
     } catch (err) {
       console.error("Failed to submit property listing:", err.response);

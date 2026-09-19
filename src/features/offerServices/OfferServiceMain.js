@@ -53,6 +53,8 @@ const OfferServiceMain = () => {
   const formik = useFormik({
     initialValues: location.state?.serviceData || defaultInitialValues,
     enableReinitialize: true,
+    validateOnChange: false,
+    validateOnBlur: true,
     validationSchema: step === 1 ? step1Schema : step === 2 ? step2Schema : null,
     onSubmit: async (values) => {
       try {

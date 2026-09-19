@@ -29,9 +29,9 @@ const MENU_ITEMS = [
   { title: "Dashboard", icon: <DashboardOutlined />, path: "/agent/dashboard" },
   { title: "My Listings", subtitle: "Properties & Services", icon: <HomeWorkOutlined />, path: "/agent/listings" },
   // { title: "Bookings", icon: <CalendarTodayOutlined />, path: "/agent/bookings" },
-  { title: "Finance", icon: <AccountBalanceWalletOutlined />, path: "/agent/transactions" },
+  { title: "Finance", icon: <AccountBalanceWalletOutlined />, path: "/agent/payouts" },
   { title: "Verification", icon: <VerifiedUserOutlined />, path: "/agent/verification" },
-  { title: "Profile", icon: <PersonOutlineOutlined />, path: "/agent/payouts" },
+  { title: "Profile", icon: <PersonOutlineOutlined />, path: "/agent/profile" },
   // { title: "Settings", icon: <SettingsOutlined />, path: "/agent/settings" },
 ];
 

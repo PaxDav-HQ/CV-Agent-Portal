@@ -60,8 +60,7 @@ const PropertiesFilterTabs = ({
 
         {/* LIST NEW BUTTON */}
         <Button
-          variant="contained"
-          disabled
+          variant="contained"          
           startIcon={<Add />}
           onClick={() => navigate("/agent/property-types")}
           sx={{

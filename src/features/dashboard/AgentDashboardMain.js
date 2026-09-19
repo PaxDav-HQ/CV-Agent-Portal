@@ -35,6 +35,7 @@ const AgentDashboardMain = () => {
       const res = await axios.get(`${uri}agent/dashboard`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      console.log(res.data)
       setData(res.data);
     } catch (err) {
       console.error("Failed to load agent dashboard data:", err);
@@ -48,26 +49,7 @@ const AgentDashboardMain = () => {
   const listings = data?.featuredListings || [];
   const bookings = data?.recentBookings || [];
 
-  const recentActivities = [
-    {
-      title: "Property 'Azure Heights' verified",
-      time: "15 mins ago",
-      icon: <CheckCircleOutlined sx={{ fontSize: 16, color: "#10B981" }} />,
-      bg: "#ECFDF5",
-    },
-    {
-      title: "Payout of ₦450k successful",
-      time: "2 hours ago",
-      icon: <ReceiptOutlined sx={{ fontSize: 16, color: "#3B82F6" }} />,
-      bg: "#EFF6FF",
-    },
-    {
-      title: "Document update for Lekki Villa",
-      time: "Yesterday",
-      icon: <WarningAmberOutlined sx={{ fontSize: 16, color: "#EF4444" }} />,
-      bg: "#FEF2F2",
-    },
-  ];
+  const recentActivities = data?.recentActivities || [];
 
   if (loading && !data) {
     return (
