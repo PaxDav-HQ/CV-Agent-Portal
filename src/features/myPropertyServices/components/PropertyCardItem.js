@@ -354,10 +354,7 @@ const PropertyCardItem = ({ property }) => {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Button
               variant="outlined"
-              size="small"
-              onClick={() =>
-                navigate(property.viewDetailsUrl || `/properties/${property.id}`)
-              }
+              size="small"              
               sx={{
                 textTransform: "none",
                 fontWeight: 700,

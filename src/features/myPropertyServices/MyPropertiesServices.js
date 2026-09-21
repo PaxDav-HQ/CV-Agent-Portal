@@ -30,11 +30,11 @@ const MyPropertiesServices = () => {
   const [search, setSearch] = useState("");
 
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(10);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
-    limit: 20,
+    limit: 10,
     totalPages: 1,
     hasNext: false,
     hasPrev: false,

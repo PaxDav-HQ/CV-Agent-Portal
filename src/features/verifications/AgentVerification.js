@@ -6,6 +6,7 @@ import {
   Checkbox,
   FormControlLabel,
   CircularProgress,
+  Snackbar,
   Alert,
 } from "@mui/material";
 import { SendOutlined, LockOutlined } from "@mui/icons-material";
@@ -68,7 +69,6 @@ const AgentVerification = () => {
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [data, setData] = useState(null);
 
   // Document files held in state before final submission
@@ -83,18 +83,39 @@ const AgentVerification = () => {
   const [activeTab, setActiveTab] = useState("required_docs");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState({ type: "", message: "" });
+
+  // Floating Toast Notification State
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success", // "success" | "error" | "info" | "warning"
+  });
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === "clickaway") return;
+    setToast((prev) => ({ ...prev, open: false }));
+  };
+
+  const showToast = (message, severity = "success") => {
+    setToast({
+      open: true,
+      message,
+      severity,
+    });
+  };
 
   // 1. Fetch Verification Status
   const fetchVerificationStatus = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const res = await axios.get(`${uri}agent/verify`, {
         headers: authHeaders,
       });
 
-      const verificationData = res.data?.data || res.data || {};
+      // Handles both { data: { verification: {...} } } and flat { data: {...} }
+      const verificationData =
+        res.data?.data?.verification || res.data?.data || res.data?.verification || res.data || {};
+      
       setData(verificationData);
 
       if (verificationData.tabs?.length > 0) {
@@ -104,7 +125,7 @@ const AgentVerification = () => {
       }
     } catch (err) {
       console.error("Failed to load verification status:", err);
-      setError(extractErrorMessage(err, "Failed to load verification status."));
+      showToast(extractErrorMessage(err, "Failed to load verification status."), "error");
     } finally {
       setLoading(false);
     }
@@ -122,21 +143,26 @@ const AgentVerification = () => {
     }));
   };
 
-  // 3. Submit Form Data to POST /api/agent/verify
+  // 3. Submit Form Data to POST /agent/verify
   const handleSubmitVerification = async () => {
-    setFeedback({ type: "", message: "" });
+    const existingServerDocs = data?.documents || [];
 
-    // Client-side validation of required files
-    if (!selectedFiles.government_id) {
-      setFeedback({ type: "error", message: "Please select your Government ID." });
+    const isDocUploaded = (docKey) => {
+      const found = existingServerDocs.find((d) => (d.id || d.key) === docKey);
+      return Boolean(found?.isUploaded || found?.documentUrl);
+    };
+
+    // Client-side validation: ensure required docs are either already uploaded or staged
+    if (!selectedFiles.government_id && !isDocUploaded("government_id")) {
+      showToast("Please select your Government ID before submitting.", "warning");
       return;
     }
-    if (!selectedFiles.selfie_with_id) {
-      setFeedback({ type: "error", message: "Please select your Selfie with ID." });
+    if (!selectedFiles.selfie_with_id && !isDocUploaded("selfie_with_id")) {
+      showToast("Please select your Selfie with ID before submitting.", "warning");
       return;
     }
-    if (!selectedFiles.business_registration) {
-      setFeedback({ type: "error", message: "Please select your Business Registration (CAC)." });
+    if (!selectedFiles.business_registration && !isDocUploaded("business_registration")) {
+      showToast("Please select your Business Registration (CAC) before submitting.", "warning");
       return;
     }
 
@@ -166,26 +192,40 @@ const AgentVerification = () => {
         });
       }
 
-      await axios.post(`${uri}agent/verify`, formData, {
+      const res = await axios.post(`${uri}agent/verify`, formData, {
         headers: {
           ...authHeaders,
           "Content-Type": "multipart/form-data",
         },
       });
 
-      setFeedback({
-        type: "success",
-        message: "Documents uploaded successfully! Your verification is now under review.",
-      });
+      // Floating Toast Alert
+      showToast(
+        res.data?.message || "Verification documents submitted successfully. Our team will review your submission.",
+        "success"
+      );
 
-      // Refresh view
-      fetchVerificationStatus();
+      // Immediately sync state if backend returned the full payload
+      if (res.data?.data?.verification) {
+        setData(res.data.data.verification);
+      } else {
+        fetchVerificationStatus();
+      }
+
+      // Clear staged files
+      setSelectedFiles({
+        government_id: null,
+        selfie_with_id: null,
+        business_registration: null,
+        business_address_proof: null,
+        business_images: [],
+      });
     } catch (err) {
       console.error("Submission failed:", err);
-      setFeedback({
-        type: "error",
-        message: extractErrorMessage(err, "Failed to submit verification documents."),
-      });
+      showToast(
+        extractErrorMessage(err, "Failed to submit verification documents. Please try again."),
+        "error"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -203,8 +243,41 @@ const AgentVerification = () => {
   const documentList =
     data?.documents && data.documents.length > 0 ? data.documents : DEFAULT_DOCUMENTS;
 
+  const isApproved = data?.isVerified || data?.status?.toLowerCase() === "approved";
+
   return (
-    <Box sx={{ bgcolor: "#FAFBFC", minHeight: "100vh", p: { xs: 2, sm: 3, md: 4 }, pb: 8 }}>
+    <Box sx={{ bgcolor: "#FAFBFC", minHeight: "100vh", p: { xs: 1, md: 1 }, pb: 8 }}>
+      {/* Floating Toast Notification */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{ mt: { xs: 2, sm: 3 }, zIndex: 9999 }}
+      >
+        <Alert
+          onClose={handleCloseToast}
+          severity={toast.severity}
+          variant="filled"
+          sx={{
+            width: "100%",
+            fontWeight: 700,
+            borderRadius: "10px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+            bgcolor:
+              toast.severity === "success"
+                ? "#017E53"
+                : toast.severity === "error"
+                ? "#DC2626"
+                : toast.severity === "warning"
+                ? "#D97706"
+                : undefined,
+          }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
+
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F172A", letterSpacing: "-0.5px" }}>
@@ -215,19 +288,7 @@ const AgentVerification = () => {
         </Typography>
       </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: "12px" }}>
-          {error}
-        </Alert>
-      )}
-
-      {feedback.message && (
-        <Alert severity={feedback.type} sx={{ mb: 3, borderRadius: "12px" }}>
-          {feedback.message}
-        </Alert>
-      )}
-
-      {/* 1. Status Banner & Steps */}
+      {/* 1. Status Banner & Steps (Side-by-side with What Happens Next on Desktop) */}
       <VerificationStatusBanner data={data} />
 
       {/* 2. Documents Section */}
@@ -238,7 +299,8 @@ const AgentVerification = () => {
         documents={documentList}
         selectedFiles={selectedFiles}
         onSelectFile={handleSelectFile}
-      />      
+      />
+
       {/* 3. Security Reassurance */}
       <VerificationSecurityBanner security={data?.security} />
 
@@ -246,47 +308,52 @@ const AgentVerification = () => {
       <VerificationTipsFaq />
 
       {/* 5. Bottom Submission Action */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mt: 4, gap: 2 }}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
-              sx={{ color: "#017E53", "&.Mui-checked": { color: "#017E53" } }}
-            />
-          }
-          label={
-            <Typography variant="body2" sx={{ color: "#475569", fontSize: "13px" }}>
-              By submitting, you confirm that all information provided is accurate and genuine.
-            </Typography>
-          }
-        />
+      {!isApproved && (
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mt: 4, gap: 2 }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                sx={{ color: "#017E53", "&.Mui-checked": { color: "#017E53" } }}
+              />
+            }
+            label={
+              <Typography variant="body2" sx={{ color: "#475569", fontSize: "13px" }}>
+                By submitting, you confirm that all information provided is accurate and genuine.
+              </Typography>
+            }
+          />
 
-        <Button
-          variant="contained"
-          size="large"
-          disabled={!agreedToTerms || submitting}
-          onClick={handleSubmitVerification}
-          endIcon={!submitting && <SendOutlined sx={{ fontSize: 18 }} />}
-          sx={{
-            py: 1.4,
-            px: 6,
-            borderRadius: "10px",
-            bgcolor: "#017E53",
-            fontWeight: 800,
-            fontSize: "14px",
-            textTransform: "none",
-            "&:hover": { bgcolor: "#016744" },
-            "&.Mui-disabled": { bgcolor: "#E2E8F0", color: "#94A3B8" },
-          }}
-        >
-          {submitting ? <CircularProgress size={20} color="inherit" /> : "Submit for Verification"}
-        </Button>
+          <Button
+            variant="contained"
+            size="large"
+            disabled={!agreedToTerms || submitting}
+            onClick={handleSubmitVerification}
+            endIcon={!submitting && <SendOutlined sx={{ fontSize: 18 }} />}
+            sx={{
+              py: 1.4,
+              px: 6,
+              borderRadius: "10px",
+              bgcolor: "#017E53",
+              fontWeight: 800,
+              fontSize: "14px",
+              textTransform: "none",
+              "&:hover": { bgcolor: "#016744" },
+              "&.Mui-disabled": { bgcolor: "#E2E8F0", color: "#94A3B8" },
+            }}
+          >
+            {submitting ? <CircularProgress size={20} color="inherit" /> : "Submit for Verification"}
+          </Button>
 
-        <Typography variant="caption" sx={{ color: "#94A3B8", display: "flex", alignItems: "center", gap: 0.5, fontSize: "11px" }}>
-          <LockOutlined sx={{ fontSize: 13 }} /> End-to-end encrypted secure verification
-        </Typography>
-      </Box>
+          <Typography
+            variant="caption"
+            sx={{ color: "#94A3B8", display: "flex", alignItems: "center", gap: 0.5, fontSize: "11px" }}
+          >
+            <LockOutlined sx={{ fontSize: 13 }} /> End-to-end encrypted secure verification
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };

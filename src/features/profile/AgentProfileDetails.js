@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Box, Typography, CircularProgress, Alert, Breadcrumbs, Link } from "@mui/material";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -12,24 +12,19 @@ import EditProfileModal from "./components/EditProfileModal";
 
 const AgentProfileDetails = () => {
   const uri = useSelector((state) => state.UriReducer?.uri);
+  const token = sessionStorage.getItem("userToken");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const token = sessionStorage.getItem("userToken");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
       const baseUrl = uri ? uri.replace(/\/+$/, "") : "";
       const res = await axios.get(`${baseUrl}/agent/my/profile`, { headers });
 
@@ -40,22 +35,16 @@ const AgentProfileDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [uri, token]);
 
-  if (loading) {
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  if (loading && !profileData) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
         <CircularProgress sx={{ color: "#017E53" }} />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error" sx={{ borderRadius: "12px" }}>
-          {error}
-        </Alert>
       </Box>
     );
   }
@@ -69,7 +58,7 @@ const AgentProfileDetails = () => {
         maxWidth: "100%",
         overflowX: "hidden",
         boxSizing: "border-box",
-        p: { xs: 2, sm: 3, md: 4 },
+        p: { xs: 1, md: 1 },
       }}
     >
       {/* 1. Breadcrumbs & Title */}
@@ -91,14 +80,23 @@ const AgentProfileDetails = () => {
         </Typography>
       </Box>
 
-      {/* 2. Profile Banner & Stats Card with Edit Button */}
+      {/* Error Alert */}
+      {error && (
+        <Box sx={{ mb: 3 }}>
+          <Alert severity="error" sx={{ borderRadius: "12px" }}>
+            {error}
+          </Alert>
+        </Box>
+      )}
+
+      {/* 2. Profile Banner & Stats Card */}
       <ProfileHeaderCard
         profile={profileData?.profile}
         kpiMetrics={profileData?.kpiMetrics}
         onEditClick={() => setIsEditModalOpen(true)}
       />
 
-      {/* 3. Two-Column Studio Layout */}
+      {/* 3. Two-Column Layout */}
       <Box
         sx={{
           display: "grid",
@@ -109,14 +107,20 @@ const AgentProfileDetails = () => {
       >
         {/* Left Column: Summary & Reviews */}
         <Box sx={{ minWidth: 0 }}>
-          <ProfessionalSummaryCard summary={profileData?.professionalSummary} />
+          <ProfessionalSummaryCard
+            summary={profileData?.professionalSummary}
+            onEditClick={() => setIsEditModalOpen(true)}
+          />
           <ClientReviewsSection reviewsData={profileData?.recentClientReviews} />
         </Box>
 
         {/* Right Column: Verification & Availability */}
         <Box sx={{ minWidth: 0 }}>
           <VerifiedStatusCard verifiedAccount={profileData?.verifiedAccount} />
-          <ContactAvailabilityCard contactInfo={profileData?.contactAndAvailability} />
+          <ContactAvailabilityCard
+            contactInfo={profileData?.contactAndAvailability}
+            onEditClick={() => setIsEditModalOpen(true)}
+          />
         </Box>
       </Box>
 

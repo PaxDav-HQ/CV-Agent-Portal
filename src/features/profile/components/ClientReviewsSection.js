@@ -1,105 +1,94 @@
 import React from "react";
-import { Paper, Typography, Box, Avatar, Button, Rating, Divider } from "@mui/material";
-import { Star } from "@mui/icons-material";
+import { Box, Paper, Typography, Rating } from "@mui/material";
+import { StarBorderOutlined, RateReviewOutlined } from "@mui/icons-material";
 
 const ClientReviewsSection = ({ reviewsData }) => {
-  if (!reviewsData) return null;
-
-  const { title, ratingSummary, reviews = [] } = reviewsData;
+  const reviews = Array.isArray(reviewsData?.reviews) ? reviewsData.reviews : [];
+  const hasReviews = reviews.length > 0;
 
   return (
     <Paper
       elevation={0}
       sx={{
-        p: { xs: 2.5, sm: 3.5 },
-        borderRadius: "20px",
-        border: "1px solid #E5E7EB",
+        p: { xs: 2.5, sm: 3 },
+        borderRadius: "16px",
+        border: "1px solid #E2E8F0",
         bgcolor: "#FFFFFF",
       }}
     >
-      {/* Reviews Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, flexWrap: "wrap", gap: 1 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#111827", fontSize: "16px" }}>
-            {title || "Recent Client Reviews"}
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <div>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "16px" }}>
+            Client Reviews & Ratings
           </Typography>
-          {ratingSummary && (
-            <Typography variant="caption" sx={{ fontWeight: 700, color: "#017E53", fontSize: "13px" }}>
-              {ratingSummary.formatted}
-            </Typography>
-          )}
-        </Box>
+          <Typography variant="caption" sx={{ color: "#64748B" }}>
+            Verified feedback from guests and property owners
+          </Typography>
+        </div>
+      </Box>
 
-        <Button
-          size="small"
-          variant="outlined"
+      {!hasReviews ? (
+        <Box
           sx={{
-            borderColor: "#E5E7EB",
-            color: "#374151",
-            textTransform: "none",
-            borderRadius: "8px",
-            fontSize: "12px",
-            fontWeight: 600,
+            py: 4,
+            px: 2,
+            borderRadius: "12px",
+            bgcolor: "#F8FAFC",
+            border: "1px dashed #CBD5E1",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
           }}
         >
-          Filter by Rating
-        </Button>
-      </Box>
-
-      {/* Reviews Stream */}
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        {reviews.length === 0 ? (
-          <Typography variant="body2" sx={{ color: "#9CA3AF" }}>
-            No reviews yet.
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              bgcolor: "#F1F5F9",
+              color: "#64748B",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mb: 1.2,
+            }}
+          >
+            <RateReviewOutlined sx={{ fontSize: 22 }} />
+          </Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1E293B", mb: 0.3 }}>
+            No reviews yet
           </Typography>
-        ) : (
-          reviews.map((rev, index) => (
-            <Box key={rev.id || index}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Avatar src={rev.avatar} alt={rev.clientName} sx={{ width: 38, height: 38 }} />
-                  <div>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#111827", fontSize: "13px" }}>
-                      {rev.clientName}
-                    </Typography>
-                    <Rating
-                      value={rev.rating || 5}
-                      readOnly
-                      size="small"
-                      icon={<Star sx={{ color: "#FBBF24", fontSize: 14 }} />}
-                      emptyIcon={<Star sx={{ color: "#E5E7EB", fontSize: 14 }} />}
-                    />
-                  </div>
-                </Box>
-                <Typography variant="caption" sx={{ color: "#9CA3AF", fontSize: "11px" }}>
-                  {rev.timeAgo}
+          <Typography variant="caption" sx={{ color: "#64748B", maxWidth: 300, lineHeight: 1.4 }}>
+            As you fulfill client bookings and complete services, client ratings and testimonials will appear here automatically.
+          </Typography>
+        </Box>
+      ) : (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {reviews.map((rev) => (
+            <Box
+              key={rev.id}
+              sx={{
+                p: 2,
+                borderRadius: "10px",
+                bgcolor: "#F8FAFC",
+                border: "1px solid #E2E8F0",
+              }}
+            >
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0F172A" }}>
+                  {rev.clientName}
                 </Typography>
+                <Rating value={rev.rating || 5} readOnly size="small" />
               </Box>
-
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "#4B5563",
-                  fontSize: "13px",
-                  lineHeight: 1.5,
-                  fontStyle: "italic",
-                  pl: { xs: 0, sm: 6.5 },
-                }}
-              >
-                "{rev.comment}"
+              <Typography variant="caption" sx={{ color: "#64748B", display: "block", mb: 1 }}>
+                {rev.date}
               </Typography>
-
-              {index < reviews.length - 1 && <Divider sx={{ mt: 2.5 }} />}
+              <Typography variant="body2" sx={{ color: "#334155", fontSize: "13px" }}>
+                {rev.comment}
+              </Typography>
             </Box>
-          ))
-        )}
-      </Box>
-
-      {reviews.length > 0 && (
-        <Box sx={{ textAlign: "center", mt: 3, pt: 2, borderTop: "1px solid #F3F4F6" }}>
-          <Button sx={{ textTransform: "none", color: "#6B7280", fontWeight: 700, fontSize: "12px" }}>
-            Load more reviews
-          </Button>
+          ))}
         </Box>
       )}
     </Paper>
