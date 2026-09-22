@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Box, CircularProgress } from "@mui/material";
-import {
-  ReceiptOutlined,
-  WarningAmberOutlined,
-  CheckCircleOutlined,
-} from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
@@ -22,6 +17,7 @@ const AgentDashboardMain = () => {
   const uri = useSelector((state) => state.UriReducer?.uri);
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -31,14 +27,21 @@ const AgentDashboardMain = () => {
   const fetchDashboard = async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const token = sessionStorage.getItem("userToken");
-      const res = await axios.get(`${uri}agent/dashboard`, {
+      const baseUrl = uri ? uri.replace(/\/+$/, "") : "";
+
+      const res = await axios.get(`${baseUrl}/agent/dashboard`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      console.log(res.data)
-      setData(res.data);
+
+      setData(res.data?.data || res.data);
     } catch (err) {
       console.error("Failed to load agent dashboard data:", err);
+      setError(
+        err.response?.data?.message || "Failed to load dashboard data. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -48,13 +51,12 @@ const AgentDashboardMain = () => {
   const earnings = data?.webAnalytics?.earningsSnapshot;
   const listings = data?.featuredListings || [];
   const bookings = data?.recentBookings || [];
-
   const recentActivities = data?.recentActivities || [];
 
   if (loading && !data) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
-        <CircularProgress sx={{ color: "#10B981" }} />
+        <CircularProgress sx={{ color: "#017E53" }} />
       </Box>
     );
   }
@@ -67,7 +69,7 @@ const AgentDashboardMain = () => {
         minWidth: 0,
         overflowX: "hidden",
         boxSizing: "border-box",
-        p: { xs: 1, sm: 1, md: 2 },
+        p: { xs: 1.5, sm: 2, md: 3 },
         bgcolor: "#FBFBFC",
         minHeight: "100vh",
       }}
@@ -90,15 +92,39 @@ const AgentDashboardMain = () => {
         <Box sx={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3.5 }}>
           <AgentMetricsCards cards={cards} />
           <DashboardActionButtons />
-          <FeaturedListingsSection listings={listings} />
-          <RecentBookingsCard bookings={bookings} />
+          
+          <FeaturedListingsSection
+            listings={listings}
+            loading={loading}
+            error={error}
+            onRetry={fetchDashboard}
+          />
+
+          <RecentBookingsCard
+            bookings={bookings}
+            loading={loading}
+            error={error}
+            onRetry={fetchDashboard}
+          />
         </Box>
 
         {/* ================= RIGHT COLUMN ================= */}
         <Box sx={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3.5 }}>
           <EarningsSnapshotCard earnings={earnings} />
           <AgentPayoutCard earnings={earnings} />
-          <RecentActivityCard activities={recentActivities} />
+          
+          <RecentActivityCard
+            activities={recentActivities}
+            loading={loading}
+            error={error}
+            onRetry={fetchDashboard}
+            onClear={() => {
+              setData((prev) => ({
+                ...prev,
+                recentActivities: [],
+              }));
+            }}
+          />
         </Box>
       </Box>
     </Box>

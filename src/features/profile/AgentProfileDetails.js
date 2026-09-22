@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Typography, CircularProgress, Alert, Breadcrumbs, Link } from "@mui/material";
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Breadcrumbs,
+  Link,
+  Paper,
+  Button,
+} from "@mui/material";
+import { ErrorOutlined, Refresh } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
@@ -24,14 +33,16 @@ const AgentProfileDetails = () => {
       setLoading(true);
       setError(null);
 
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const baseUrl = uri ? uri.replace(/\/+$/, "") : "";
-      const res = await axios.get(`${baseUrl}/agent/my/profile`, { headers });
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};      
+      const res = await axios.get(`${uri}agent/my/profile`, { headers });
 
       setProfileData(res.data?.data || res.data);
     } catch (err) {
       console.error("Failed to load agent profile details:", err);
-      setError(err.response?.data?.message || "Could not retrieve profile information.");
+      setError(
+        err.response?.data?.message ||
+          "Could not retrieve profile information. Please verify your connection."
+      );
     } finally {
       setLoading(false);
     }
@@ -41,6 +52,7 @@ const AgentProfileDetails = () => {
     fetchProfile();
   }, [fetchProfile]);
 
+  // 1. Initial Loading State
   if (loading && !profileData) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
@@ -49,6 +61,83 @@ const AgentProfileDetails = () => {
     );
   }
 
+  // 2. Initial Fetch Failure (Elevated Error Card, No Blank Screen)
+  if (error && !profileData) {
+    return (
+      <Box
+        sx={{
+          bgcolor: "#FAFBFC",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          pt: { xs: 8, md: 12 },
+          pb: 12,
+          px: 2,
+        }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 3.5, sm: 5 },
+            maxWidth: 460,
+            width: "100%",
+            borderRadius: "20px",
+            border: "1px solid #FEE2E2",
+            bgcolor: "#FFFFFF",
+            textAlign: "center",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.04)",
+          }}
+        >
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              bgcolor: "#FEF2F2",
+              color: "#DC2626",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mx: "auto",
+              mb: 2,
+            }}
+          >
+            <ErrorOutlined sx={{ fontSize: 32 }} />
+          </Box>
+
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", mb: 0.5 }}>
+            Failed to Load Profile
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: "#64748B", fontSize: "13px", mb: 3 }}>
+            {error}
+          </Typography>
+
+          <Button
+            variant="contained"
+            startIcon={<Refresh />}
+            onClick={fetchProfile}
+            sx={{
+              bgcolor: "#017E53",
+              color: "#FFFFFF",
+              textTransform: "none",
+              fontWeight: 700,
+              borderRadius: "10px",
+              px: 3.5,
+              py: 1,
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#016744", boxShadow: "none" },
+            }}
+          >
+            Try Again
+          </Button>
+        </Paper>
+      </Box>
+    );
+  }
+
+  // 3. Regular Loaded Content
   return (
     <Box
       sx={{
@@ -58,10 +147,10 @@ const AgentProfileDetails = () => {
         maxWidth: "100%",
         overflowX: "hidden",
         boxSizing: "border-box",
-        p: { xs: 1, md: 1 },
+        p: { xs: 1.5, sm: 2, md: 3 },
       }}
     >
-      {/* 1. Breadcrumbs & Title */}
+      {/* Breadcrumbs & Title */}
       <Box sx={{ mb: 3 }}>
         <Breadcrumbs sx={{ fontSize: "12px", color: "#9CA3AF", mb: 0.5 }}>
           <Link underline="hover" color="inherit" href="#">
@@ -75,38 +164,33 @@ const AgentProfileDetails = () => {
           </Typography>
         </Breadcrumbs>
 
-        <Typography variant="h5" sx={{ fontWeight: 800, color: "#111827", fontSize: { xs: "22px", md: "26px" } }}>
+        <Typography
+          variant="h5"
+          sx={{ fontWeight: 800, color: "#111827", fontSize: { xs: "22px", md: "26px" } }}
+        >
           {profileData?.header?.title || "Provider Profile"}
         </Typography>
       </Box>
 
-      {/* Error Alert */}
-      {error && (
-        <Box sx={{ mb: 3 }}>
-          <Alert severity="error" sx={{ borderRadius: "12px" }}>
-            {error}
-          </Alert>
-        </Box>
-      )}
-
-      {/* 2. Profile Banner & Stats Card */}
+      {/* Profile Banner & Stats Card */}
       <ProfileHeaderCard
         profile={profileData?.profile}
         kpiMetrics={profileData?.kpiMetrics}
         onEditClick={() => setIsEditModalOpen(true)}
       />
 
-      {/* 3. Two-Column Layout */}
+      {/* Two-Column Layout */}
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: { xs: "1fr", lg: "1.7fr 1fr" },
           gap: 3,
           alignItems: "start",
+          mt: 3,
         }}
       >
         {/* Left Column: Summary & Reviews */}
-        <Box sx={{ minWidth: 0 }}>
+        <Box sx={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
           <ProfessionalSummaryCard
             summary={profileData?.professionalSummary}
             onEditClick={() => setIsEditModalOpen(true)}
@@ -115,7 +199,7 @@ const AgentProfileDetails = () => {
         </Box>
 
         {/* Right Column: Verification & Availability */}
-        <Box sx={{ minWidth: 0 }}>
+        <Box sx={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
           <VerifiedStatusCard verifiedAccount={profileData?.verifiedAccount} />
           <ContactAvailabilityCard
             contactInfo={profileData?.contactAndAvailability}
@@ -124,7 +208,7 @@ const AgentProfileDetails = () => {
         </Box>
       </Box>
 
-      {/* 4. Edit Profile Modal Dialog */}
+      {/* Edit Profile Modal Dialog */}
       <EditProfileModal
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

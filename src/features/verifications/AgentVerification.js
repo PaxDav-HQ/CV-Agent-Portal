@@ -8,8 +8,9 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Paper,
 } from "@mui/material";
-import { SendOutlined, LockOutlined } from "@mui/icons-material";
+import { SendOutlined, LockOutlined, Refresh, ErrorOutlined } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
@@ -69,6 +70,7 @@ const AgentVerification = () => {
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [data, setData] = useState(null);
 
   // Document files held in state before final submission
@@ -88,7 +90,7 @@ const AgentVerification = () => {
   const [toast, setToast] = useState({
     open: false,
     message: "",
-    severity: "success", // "success" | "error" | "info" | "warning"
+    severity: "success",
   });
 
   const handleCloseToast = (event, reason) => {
@@ -108,14 +110,15 @@ const AgentVerification = () => {
   const fetchVerificationStatus = useCallback(async () => {
     try {
       setLoading(true);
+      setFetchError(null);
+
       const res = await axios.get(`${uri}agent/verify`, {
         headers: authHeaders,
       });
 
-      // Handles both { data: { verification: {...} } } and flat { data: {...} }
       const verificationData =
         res.data?.data?.verification || res.data?.data || res.data?.verification || res.data || {};
-      
+
       setData(verificationData);
 
       if (verificationData.tabs?.length > 0) {
@@ -125,7 +128,9 @@ const AgentVerification = () => {
       }
     } catch (err) {
       console.error("Failed to load verification status:", err);
-      showToast(extractErrorMessage(err, "Failed to load verification status."), "error");
+      const parsedError = extractErrorMessage(err, "Failed to load verification status. Check your connection.");
+      setFetchError(parsedError);
+      showToast(parsedError, "error");
     } finally {
       setLoading(false);
     }
@@ -152,7 +157,6 @@ const AgentVerification = () => {
       return Boolean(found?.isUploaded || found?.documentUrl);
     };
 
-    // Client-side validation: ensure required docs are either already uploaded or staged
     if (!selectedFiles.government_id && !isDocUploaded("government_id")) {
       showToast("Please select your Government ID before submitting.", "warning");
       return;
@@ -171,7 +175,6 @@ const AgentVerification = () => {
 
       const formData = new FormData();
 
-      // Append single binary fields
       if (selectedFiles.government_id) {
         formData.append("government_id", selectedFiles.government_id);
       }
@@ -185,7 +188,6 @@ const AgentVerification = () => {
         formData.append("business_address_proof", selectedFiles.business_address_proof);
       }
 
-      // Append multiple images for business_images
       if (Array.isArray(selectedFiles.business_images)) {
         selectedFiles.business_images.forEach((img) => {
           formData.append("business_images", img);
@@ -199,20 +201,17 @@ const AgentVerification = () => {
         },
       });
 
-      // Floating Toast Alert
       showToast(
         res.data?.message || "Verification documents submitted successfully. Our team will review your submission.",
         "success"
       );
 
-      // Immediately sync state if backend returned the full payload
       if (res.data?.data?.verification) {
         setData(res.data.data.verification);
       } else {
         fetchVerificationStatus();
       }
 
-      // Clear staged files
       setSelectedFiles({
         government_id: null,
         selfie_with_id: null,
@@ -231,10 +230,84 @@ const AgentVerification = () => {
     }
   };
 
+  // State A: Loading initial data
   if (loading && !data) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
         <CircularProgress sx={{ color: "#017E53" }} />
+      </Box>
+    );
+  }
+
+  // State B: Initial load failed — prevents rendering crashing child components
+  if (fetchError && !data) {
+    return (
+      <Box
+        sx={{
+          bgcolor: "#FAFBFC",
+          minHeight: "80vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 2,
+        }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            maxWidth: 440,
+            width: "100%",
+            borderRadius: "20px",
+            border: "1px solid #FEE2E2",
+            bgcolor: "#FFFFFF",
+            textAlign: "center",
+          }}
+        >
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              bgcolor: "#FEF2F2",
+              color: "#DC2626",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mx: "auto",
+              mb: 2,
+            }}
+          >
+            <ErrorOutlined sx={{ fontSize: 32 }} />
+          </Box>
+
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", mb: 0.5 }}>
+            Failed to load verification
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: "#64748B", fontSize: "13px", mb: 3 }}>
+            {fetchError}
+          </Typography>
+
+          <Button
+            variant="contained"
+            startIcon={<Refresh />}
+            onClick={fetchVerificationStatus}
+            sx={{
+              bgcolor: "#017E53",
+              color: "#FFFFFF",
+              textTransform: "none",
+              fontWeight: 700,
+              borderRadius: "10px",
+              px: 3,
+              py: 1,
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#016744" },
+            }}
+          >
+            Try Again
+          </Button>
+        </Paper>
       </Box>
     );
   }
@@ -288,7 +361,7 @@ const AgentVerification = () => {
         </Typography>
       </Box>
 
-      {/* 1. Status Banner & Steps (Side-by-side with What Happens Next on Desktop) */}
+      {/* 1. Status Banner & Steps */}
       <VerificationStatusBanner data={data} />
 
       {/* 2. Documents Section */}
