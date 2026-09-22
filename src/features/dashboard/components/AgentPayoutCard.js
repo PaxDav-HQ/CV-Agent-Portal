@@ -26,13 +26,13 @@ const AgentPayoutCard = ({ earnings }) => {
           variant="caption"
           sx={{ color: "#6EE7B7", fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}
         >
-          Available for Payout
+          Pending Payout
         </Typography>
         <Typography variant="h4" sx={{ fontWeight: 900, color: "#FFFFFF", my: 0.5, fontSize: "26px" }}>
-          {earnings?.formattedPendingPayout || "₦112,611"}
+          {earnings?.formattedPendingPayout || "₦0.00"}
         </Typography>
-        <Typography variant="body2" sx={{ color: "#A7F3D0", fontSize: "12px" }}>
-          Processed directly to your registered settlement bank account.
+        <Typography variant="body2" sx={{ color: "#6EE7B7", fontSize: "12px" }}>
+          Currently processing and will settle into your registered bank account soon.
         </Typography>
       </div>
 
