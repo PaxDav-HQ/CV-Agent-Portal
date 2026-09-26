@@ -70,7 +70,7 @@ const PayoutBankAccountsCard = ({ bankAccounts = [], onAddBankClick, onDeleteBan
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
           {bankAccounts.map((b) => (
             <Box
-              key={b.id || b.accountNumber}
+              key={b.id}
               sx={{
                 p: 1.5,
                 borderRadius: "12px",
@@ -85,10 +85,10 @@ const PayoutBankAccountsCard = ({ bankAccounts = [], onAddBankClick, onDeleteBan
                 <AccountBalanceOutlined sx={{ color: "#017E53", fontSize: 20 }} />
                 <div>
                   <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0F172A", fontSize: "13px" }}>
-                    {b.bankName || b.bank_name || "Commercial Bank"}
+                    {b?.bank_name}
                   </Typography>
                   <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
-                    {b.accountNumber} • {b.accountName || b.account_name}
+                    {b.account_number} • {b.account_name}
                   </Typography>
                 </div>
               </Box>

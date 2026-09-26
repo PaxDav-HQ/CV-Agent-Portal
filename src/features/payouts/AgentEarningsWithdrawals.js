@@ -55,8 +55,8 @@ const AgentEarningsWithdrawals = () => {
       const resData = res.data?.data || res.data || {};
       setDashboardData(resData);
 
-      if (resData.bankAccounts) {
-        setBankAccounts(resData.bankAccounts);
+      if (resData.payout_bank_accounts) {
+        setBankAccounts(resData.payout_bank_accounts);
       }
     } catch (err) {
       console.error("Failed to load earnings:", err);

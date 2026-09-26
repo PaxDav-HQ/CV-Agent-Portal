@@ -62,6 +62,25 @@ const RequestWithdrawalModal = ({ open, onClose, availableBalance = 0, bankAccou
     }
   };
 
+  // 1. Helper to format for display
+  const formatDisplayAmount = (val) => {
+    if (!val) return "";
+    const parts = val.toString().split(".");
+    parts[0] = Number(parts[0]).toLocaleString("en-US");
+    return parts.join(".")
+  };
+
+  // 2. Change handler to clean the raw value before saving to state
+  const handleAmountChange = (e) => {
+    // Strip out commas and non-numeric characters (allows single decimal point if needed)
+    const rawValue = e.target.value.replace(/[^0-9.]/g, "");
+
+    // Prevent multiple decimals
+    if ((rawValue.match(/\./g) || []).length > 1) return;
+
+    setAmount(rawValue); // State stores raw number/string (e.g. "50000")
+  };
+
   return (
     <Dialog
       open={open}
@@ -98,10 +117,10 @@ const RequestWithdrawalModal = ({ open, onClose, availableBalance = 0, bankAccou
             <TextField
               fullWidth
               size="small"
-              type="number"
+              type="text"
               placeholder="e.g. 50000"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              value={formatDisplayAmount(amount)}
+              onChange={(e) => handleAmountChange(e)}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#F8FAFC" } }}
             />
           </Box>
@@ -123,7 +142,7 @@ const RequestWithdrawalModal = ({ open, onClose, availableBalance = 0, bankAccou
                 >
                   {bankAccounts.map((b) => (
                     <MenuItem key={b.id} value={b.id}>
-                      {b.bankName} — {b.accountNumber} ({b.accountName})
+                      {b.bank_name} — {b.account_number} ({b.account_name})
                     </MenuItem>
                   ))}
                 </Select>
